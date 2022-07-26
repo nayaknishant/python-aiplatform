@@ -22,6 +22,7 @@ import shutil
 import tempfile
 from typing import Any, Dict, List, NamedTuple, Optional, Sequence, Tuple, Union
 
+from google.api import httpbody_pb2
 from google.api_core import operation
 from google.api_core import exceptions as api_exceptions
 from google.auth import credentials as auth_credentials
@@ -53,7 +54,8 @@ from google.protobuf import field_mask_pb2, json_format, timestamp_pb2
 
 _DEFAULT_MACHINE_TYPE = "n1-standard-2"
 _DEPLOYING_MODEL_TRAFFIC_SPLIT_KEY = "0"
-_SUCCESSFUL_HTTP_RESPONSE = 300
+_SUCCESSFUL_HTTP_RESPONSE = 200
+_SUCCESSFUL_HTTP_RESPONSE_LIMIT = 300
 
 _LOGGER = base.Logger(__name__)
 
@@ -1512,6 +1514,43 @@ class Endpoint(base.VertexAiResourceNounWithFutureManager):
             model_version_id=prediction_response.model_version_id,
             model_resource_name=prediction_response.model,
         )
+    
+    def raw_predict(
+        self,
+        body: bytes = None,
+        instances: List = None,
+        headers: Dict[str, str] = {"Content-type":"application/json"}
+    ) -> "requests.models.Response":  # type: ignore # noqa: F821
+
+        try:
+            from requests.models import Response
+        except ImportError:
+            raise ImportError(
+                "Cannot import the requests library. Please install google-cloud-aiplatform."
+            )
+        
+        if body and instances:
+            raise ValueError("Choose either body (JSON byte string) or instances (List) as input.")
+
+        if instances:
+            body = json.dumps({"instances": instances}).encode("utf-8")
+
+        http_body = httpbody_pb2.HttpBody(
+            data=body,
+            content_type=headers["Content-type"]
+        )
+
+        prediction_response = self._prediction_client.raw_predict(
+                endpoint=self._gca_resource.name,
+                http_body=http_body
+        )
+
+        response = Response()
+        response.status_code = _SUCCESSFUL_HTTP_RESPONSE
+        response.headers = headers
+        response._content = prediction_response
+
+        return response
 
     def explain(
         self,
@@ -1969,7 +2008,7 @@ class PrivateEndpoint(Endpoint):
                 method=method, url=url, body=body, headers=headers
             )
 
-            if response.status < _SUCCESSFUL_HTTP_RESPONSE:
+            if response.status < _SUCCESSFUL_HTTP_RESPONSE_LIMIT:
                 return response
             else:
                 raise RuntimeError(
@@ -1985,7 +2024,64 @@ class PrivateEndpoint(Endpoint):
                 f"and that {url} is a valid URL."
             ) from exc
 
-    def predict(self, instances: List, parameters: Optional[Dict] = None) -> Prediction:
+    def predict(self, instances: List) -> Prediction:
+        """Make a prediction against this PrivateEndpoint using a HTTP request.
+        This method must be called within the network the PrivateEndpoint is peered to.
+        The predict() call will fail otherwise. To check, use `PrivateEndpoint.network`.
+
+        Example usage:
+            response = my_private_endpoint.predict(instances=[...])
+            my_predictions = response.predictions
+
+        Args:
+            instances (List):
+                Required. The instances that are the input to the
+                prediction call. Instance types mut be JSON serializable.
+                A DeployedModel may have an upper limit
+                on the number of instances it supports per request, and
+                when it is exceeded the prediction call errors in case
+                of AutoML Models, or, in case of customer created
+                Models, the behaviour is as documented by that Model.
+                The schema of any single instance may be specified via
+                Endpoint's DeployedModels'
+                [Model's][google.cloud.aiplatform.v1beta1.DeployedModel.model]
+                [PredictSchemata's][google.cloud.aiplatform.v1beta1.Model.predict_schemata]
+                ``instance_schema_uri``.
+
+        Returns:
+            prediction (aiplatform.Prediction):
+                Prediction object with returned predictions and Model ID.
+
+        Raises:
+            RuntimeError: If a model has not been deployed a request cannot be made.
+        """
+        self.wait()
+        self._sync_gca_resource_if_skipped()
+
+        if not self._gca_resource.deployed_models:
+            raise RuntimeError(
+                "Cannot make a predict request because a model has not been deployed on this Private"
+                "Endpoint. Please ensure a model has been deployed."
+            )
+
+        response = self._http_request(
+            method="POST",
+            url=self.predict_http_uri,
+            body=json.dumps({"instances": instances}),
+            headers={"Content-Type": "application/json"},
+        )
+
+        prediction_response = json.loads(response.data)
+
+        return Prediction(
+            predictions=prediction_response.get("predictions"),
+            deployed_model_id=self._gca_resource.deployed_models[0].id,
+        )
+
+    def raw_predict(self, 
+                body: bytes = None, 
+                headers: Dict[str, str] = None
+        ) -> Prediction:
         """Make a prediction against this PrivateEndpoint using a HTTP request.
         This method must be called within the network the PrivateEndpoint is peered to.
         The predict() call will fail otherwise. To check, use `PrivateEndpoint.network`.
@@ -2035,8 +2131,8 @@ class PrivateEndpoint(Endpoint):
         response = self._http_request(
             method="POST",
             url=self.predict_http_uri,
-            body=json.dumps({"instances": instances}),
-            headers={"Content-Type": "application/json"},
+            body=body,
+            headers=headers,
         )
 
         prediction_response = json.loads(response.data)
@@ -2081,7 +2177,7 @@ class PrivateEndpoint(Endpoint):
             url=self.health_http_uri,
         )
 
-        return response.status < _SUCCESSFUL_HTTP_RESPONSE
+        return response.status < _SUCCESSFUL_HTTP_RESPONSE_LIMIT
 
     @classmethod
     def list(

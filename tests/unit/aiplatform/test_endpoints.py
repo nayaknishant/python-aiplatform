@@ -1961,7 +1961,7 @@ class TestPrivateEndpoint(TestEndpoint):
     def test_predict(self, predict_private_endpoint_mock):
         test_endpoint = models.PrivateEndpoint(_TEST_ID)
         test_prediction = test_endpoint.predict(
-            instances=_TEST_INSTANCES, parameters={"param": 3.0}
+            instances=_TEST_INSTANCES
         )
 
         true_prediction = models.Prediction(
