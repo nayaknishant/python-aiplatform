@@ -27,6 +27,7 @@ from google.cloud.aiplatform import utils
 from google.cloud.aiplatform.compat.services import dataset_service_client
 from google.cloud.aiplatform.compat.types import (
     dataset as gca_dataset,
+    dataset_service as gca_dataset_service,
     encryption_spec as gca_encryption_spec,
     io as gca_io,
 )
@@ -724,4 +725,24 @@ class _Dataset(base.VertexAiResourceNounWithFutureManager):
             project=project,
             location=location,
             credentials=credentials,
+        )
+
+    def list_data_items(
+        self,
+        filter: str = None,
+        page_size: int = None,
+        page_token: str = None,
+        order_by: str = None
+    ):  
+
+        request = gca_dataset_service.ListDataItemsRequest(
+            parent=self.resource_name,
+            filter=filter,
+            page_size=page_size,
+            page_token=page_token,
+            order_by=order_by
+        )
+
+        return self.api_client.list_data_items(
+            request=request
         )
