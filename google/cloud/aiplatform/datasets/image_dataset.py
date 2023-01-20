@@ -24,6 +24,9 @@ from google.cloud.aiplatform.datasets import _datasources
 from google.cloud.aiplatform import initializer
 from google.cloud.aiplatform import schema
 from google.cloud.aiplatform import utils
+from google.cloud.aiplatform.compat.types import (
+    dataset_service as gca_dataset_service
+)
 
 
 class ImageDataset(datasets._Dataset):
@@ -174,7 +177,7 @@ class ImageDataset(datasets._Dataset):
         order_by: str = None
     ):  
 
-        request = cls.ListDataItemsRequest(
+        request = gca_dataset_service.ListDataItemsRequest(
             parent=cls.resource_name,
             filter=filter,
             page_size=page_size,
