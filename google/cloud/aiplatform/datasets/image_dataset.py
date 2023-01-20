@@ -165,3 +165,23 @@ class ImageDataset(datasets._Dataset):
             sync=sync,
             create_request_timeout=create_request_timeout,
         )
+    
+    def list_data_items(
+        cls,
+        filter: str = None,
+        page_size: int = None,
+        page_token: str = None,
+        order_by: str = None
+    ):  
+
+        request = cls.ListDataItemsRequest(
+            parent=cls.resource_name,
+            filter=filter,
+            page_size=page_size,
+            page_token=page_token,
+            order_by=order_by
+        )
+
+        return cls.api_client.list_data_items(
+            request=request
+        )

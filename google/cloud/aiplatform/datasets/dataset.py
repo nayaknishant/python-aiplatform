@@ -727,6 +727,7 @@ class _Dataset(base.VertexAiResourceNounWithFutureManager):
             credentials=credentials,
         )
 
+"""
     def list_data_items(
         self,
         filter: str = None,
@@ -743,6 +744,7 @@ class _Dataset(base.VertexAiResourceNounWithFutureManager):
             order_by=order_by
         )
 
-        return self.api_client.list_data_items(
+        self.api_client.list_data_items(
             request=request
         )
+"""
