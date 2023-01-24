@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-from typing import Dict, Optional, Sequence, Tuple, Union
+from typing import Dict, Iterator, Optional, Sequence, Tuple, Union
 
 from google.auth import credentials as auth_credentials
 
@@ -25,7 +25,8 @@ from google.cloud.aiplatform import initializer
 from google.cloud.aiplatform import schema
 from google.cloud.aiplatform import utils
 from google.cloud.aiplatform.compat.types import (
-    dataset_service as gca_dataset_service
+    dataset_service as gca_dataset_service,
+    data_item as gca_data_item
 )
 
 
@@ -172,19 +173,21 @@ class ImageDataset(datasets._Dataset):
     def list_data_items(
         cls,
         filter: str = None,
-        page_size: int = None,
-        page_token: str = None,
         order_by: str = None
-    ):  
+    ) -> Iterator[gca_data_item.DataItem]:  
 
         request = gca_dataset_service.ListDataItemsRequest(
             parent=cls.resource_name,
             filter=filter,
-            page_size=page_size,
-            page_token=page_token,
             order_by=order_by
         )
 
-        return cls.api_client.list_data_items(
+        list_data_items_response =  cls.api_client.list_data_items(
             request=request
         )
+
+        for page in list_data_items_response.pages:
+            for data_item in page.data_items:
+                yield data_item
+        
+
