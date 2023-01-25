@@ -171,18 +171,18 @@ class ImageDataset(datasets._Dataset):
         )
     
     def list_data_items(
-        cls,
+        self,
         filter: str = None,
         order_by: str = None
     ) -> Iterator[gca_data_item.DataItem]:  
 
         request = gca_dataset_service.ListDataItemsRequest(
-            parent=cls.resource_name,
+            parent=self.resource_name,
             filter=filter,
             order_by=order_by
         )
 
-        list_data_items_response =  cls.api_client.list_data_items(
+        list_data_items_response =  self.api_client.list_data_items(
             request=request
         )
 
