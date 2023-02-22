@@ -33,7 +33,7 @@ from google.cloud.aiplatform.experimental.vertex_model.utils import source_utils
 
 _LOGGER = base.Logger(__name__)
 
-GITHUB_DEPENDENCY = "google-cloud-aiplatform @ git+https://github.com/googleapis/python-aiplatform@refs/pull/686/head#egg=google-cloud-aiplatform"
+GITHUB_DEPENDENCY = "google-cloud-aiplatform @ git+https://github.com/nayaknishant/python-aiplatform.git@vertex_model#egg=google-cloud-aiplatform"
 
 SERVING_COMMAND_STRING_CLI_FIRST_HALF = [
     "sh",
