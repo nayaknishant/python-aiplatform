@@ -426,7 +426,6 @@ class VertexModel(metaclass=abc.ABCMeta):
     dependencies = [
         "pandas>=1.3",
         "torch>=1.7",
-        "sklearn",
         GITHUB_DEPENDENCY,
     ]
 
