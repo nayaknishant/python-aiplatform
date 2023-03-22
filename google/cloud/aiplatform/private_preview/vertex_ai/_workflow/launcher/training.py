@@ -112,7 +112,7 @@ def _make_training_script(
     if method_name in ["fit", "fit_transform"]:
         script += (
             "cloud_pickle_serializer._cpkl_serializer"
-            + f"('output_estimator', estimator, '{output_path}')\n"
+            + f"('model', estimator, '{output_path}')\n"
         )
     if method_name in ["transform", "fit_transform"]:
         script += (
@@ -192,7 +192,7 @@ def remote_training(method: Callable[..., Any]):
             display_name = self.TrainingConfig.display_name or remote_job
             # only support sklearn in PoC
             # TODO(b/271613128) update default settings after we support more frameworks
-            container_uri = self.TrainingConfig.container_uri or "python:3.8"
+            container_uri = self.TrainingConfig.container_uri or "python:3.7"
             machine_type = self.TrainingConfig.machine_type or "n1-standard-4"
             replica_count = self.TrainingConfig.replica_count or 1
 
