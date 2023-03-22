@@ -207,7 +207,7 @@ def remote_training(method: Callable[..., Any]):
 
             requirements = [
                 VERTEX_AI_DEPENDENCY_PATH,
-                f"scikit-learn=={sklearn_version}",
+                f"scikit-learn>=1.0",
                 "pandas",
             ]
 
