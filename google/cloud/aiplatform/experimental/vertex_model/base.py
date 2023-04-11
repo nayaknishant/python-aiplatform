@@ -375,6 +375,12 @@ def vertex_predict_function_wrapper(method: Callable[..., Any]):
                 ]
                 + SERVING_COMMAND_STRING_CLI_SECOND_HALF
             )
+            print(serving_command_string_cli)
+            print('========================================')
+            print(command_str)
+            print('========================================')
+            print(serving_command_string_cli + [command_str])
+            print('========================================')
 
             obj._model = aiplatform.Model.upload(
                 display_name="serving-test",
