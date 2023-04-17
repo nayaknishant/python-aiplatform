@@ -226,6 +226,19 @@ def vertex_fit_function_wrapper(method: Callable[..., Any]):
                 + SERVING_COMMAND_STRING_CODE_APIS
             )
 
+            print(import_lines)
+            print('==============================')
+            print(SERVING_COMMAND_STRING_CODE_SETUP)
+            print('==============================')
+            print(import_lines)
+            print('==============================')
+            print(training_source)
+            print('==============================')
+            print(class_creation)
+            print('==============================')
+            print(SERVING_COMMAND_STRING_CODE_APIS)
+            print('==============================')
+
             # Account for user-designated dependencies when
             # setting up remote prediction
             if GITHUB_DEPENDENCY not in obj.dependencies:
