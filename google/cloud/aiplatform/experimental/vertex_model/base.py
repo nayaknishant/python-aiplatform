@@ -363,8 +363,6 @@ def vertex_predict_function_wrapper(method: Callable[..., Any]):
             print('==============================')
             print(SERVING_COMMAND_STRING_CODE_SETUP)
             print('==============================')
-            print(import_lines)
-            print('==============================')
             print(training_source)
             print('==============================')
             print(class_creation)
@@ -396,6 +394,7 @@ def vertex_predict_function_wrapper(method: Callable[..., Any]):
             print(serving_command_string_cli + [command_str])
             print('========================================')
 
+            return 
             obj._model = aiplatform.Model.upload(
                 display_name="serving-test",
                 artifact_uri=vertex_model_model_folder,
