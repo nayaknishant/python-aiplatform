@@ -81,6 +81,7 @@ setuptools.setup(
         "google-api-core[grpc] >= 1.26.0, <3.0.0dev",
         "proto-plus >= 1.10.1",
         "packaging >= 14.3",
+        "urllib3<2",
         "google-cloud-storage >= 1.32.0, < 2.0.0dev",
         "google-cloud-bigquery >= 1.15.0, < 3.0.0dev",
     ),
